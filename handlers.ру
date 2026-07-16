@@ -1,0 +1,43 @@
+from aiogram import Router, F
+from aiogram.filters import CommandStart
+from aiogram.types import Message, CallbackQuery
+
+from keyboards import main_keyboard, donate_keyboard
+
+router = Router()
+
+
+@router.message(CommandStart())
+async def start(message: Message):
+    await message.answer(
+        "👋 Приветствуем в нашем боте!\n\nЧто хочешь купить?",
+        reply_markup=main_keyboard
+    )
+
+
+@router.callback_query(F.data == "donate")
+async def donate(callback: CallbackQuery):
+    await callback.message.edit_text(
+        "🛡 Выберите привилегию:",
+        reply_markup=donate_keyboard()
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data == "unban")
+async def unban(callback: CallbackQuery):
+    await callback.message.edit_text(
+        "🔓 Разбан\n\nСтоимость: ⭐70\n\n(Оплата будет добавлена следующим шагом.)"
+    )
+    await callback.answer()
+
+
+@router.callback_query(F.data.startswith("buy_"))
+async def buy(callback: CallbackQuery):
+    donate = callback.data.replace("buy_", "")
+
+    await callback.message.answer(
+        f"Вы выбрали:\n\n{donate}\n\n⭐ Оплата будет подключена следующим шагом."
+    )
+
+    await callback.answer()
